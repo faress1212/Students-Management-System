@@ -48,7 +48,81 @@
         <div class="content" id="content"></div>
     </main>
 
-    
+    <!-- Student Modal -->
+    <div class="overlay" id="StudentOverlay">
+        <div class="modal-head">
+            <span class="modal-title" id="modalTitle">Add New Student</span>
+            <button class="modal-close" data-close="StudentOverlay">Cancel</button>
+        </div>
+
+        <!--محتويات الفورم-->
+        <div class="modal-body">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-input" id="iFirst" placeholder="Fares">
+                    <span class="form-error" id="eFirst">First name is required</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-input" id="iLast" placeholder="Mohammed">
+                    <span class="form-error" id="eLast">Last name is required</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="iEmail" placeholder="fares.mohammed@example.com">
+                <span class="form-error" id="eEmail">Valid email is required</span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-input" id="iPhone" placeholder="0102345678">
+                    <span class="form-error" id="ePhone">Valid phone number is required</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Year</label>
+                    <select class="form-input" id="iYear">
+                        <option value="">Select Year</option>
+                        <option value="1">First Year</option>
+                        <option value="2">Second Year</option>
+                        <option value="3">Third Year</option>
+                        <option value="4">Fourth Year</option>
+                    </select>
+                    <span class="form-error" id="eYear">Year is required</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Major</label>
+                    <select class="form-input" id="iMajor">
+                        <option value="">Select Major</option>
+                        <option value="CS">Computer Science</option>
+                        <option value="IT">Information Technology</option>
+                        <option value="IS">Information Systems</option>
+                        <option value="SE">Software Engineering</option>
+                        <option value="DS">Data Science</option>
+                        <option value="CY">Cybersecurity</option>
+                    </select>
+                    <span class="form-error" id="eMajor">Major is required</span>
+                </div>
+            </div>
+        </div>
+
+        <!--ازرار حفظ والغاء الاضافه-->
+        <div class="modal-footer">
+            <button class="btn btn-outline" data-close="studentOverlay">Cancel</button>
+            <button class="btn btn-primary" id="saveStudentBtn">Save Student</button>
+        </div>
+
+    </div>
 </body>
 
 </html>
