@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack - Student Management System</title>
+
+    <link rel="icon" href="data:,">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css" />
+
+</head>
+
+<body>
+    <!-- SideBar -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-logo">
+            <h1>EduTrack</h1>
+            <p>Student Management System</p>
+        </div>
+        <nav class="Sidebar-nav">
+            <div class="nav-label">Main</div>
+            <button class="nav-item active" data-page="dashboard">Dashboard</button>
+            <button class="nav-item" data-page="students">Students</button>
+            <button class="nav-item" data-page="grades">Grades</button>
+            <button class="nav-item" data-page="attendance">Attendance</button>
+
+            <div class="nav-label" style="margin-top:8px">Analytics</div>
+            <button class="nav-item" data-page="reports"><span class="icon">📈</span>Reports</button>
+        </nav>
+    </aside>
+
+    <!--Main Content-->
+    <main class="main">
+        <header class="topbar">
+            <div style="display:flex; align-items:center; gap:12px">
+                <button class="hamburger" id="hamburger">☰</button>
+                <span class="topbar-title" id="pageTitle">Dashboard</span>
+            </div>
+            <div class="topbar-right">
+                <span class="live-badge" id="liveBadge">0 Students</span>
+                <button class="btn btn-gold btn-sm" id="topAddBtn">Add Student + </button>
+            </div>
+        </header>
+        <div class="content" id="content"></div>
+    </main>
+
+    
+</body>
+
+</html>
