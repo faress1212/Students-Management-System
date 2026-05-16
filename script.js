@@ -196,8 +196,6 @@ function boot() {
     }
 }
 
-//Mahmoud
-
 //////////////////////////////////////////////////////////////////////////////////
 class Student {
     constructor(id, firstName, lastName, email, phone, major, year) {
@@ -367,4 +365,3 @@ function rStudents() {
 
 //////////////////////////////////////////////////////////////////////////////////
 //Sayed
->>>>>>> b8ea623ebe5d41ea2653991855989440f5c2afe3
