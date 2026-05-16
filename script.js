@@ -362,6 +362,395 @@ function rStudents() {
 
 ///////////////////////////////////////////////////////////////////////////////
 //Islam
+//Mahmoud
+
+//////////////////////////////////////////////////////////////////////////////////
+class Student {
+    constructor(id, firstName, lastName, email, phone, major, year) {
+        this.id = id; this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone || '';
+        this.major = major;
+        this.year = parseInt(year);
+        this.enrolled = new Date().toISOString().split('T')[0];
+    }
+    get fullName() { return this.firstName + ' ' + this.lastName; }
+    get initials() { return (this.firstName[0] + this.lastName[0]).toUpperCase(); }
+}
+
+function saveAll() {
+    try {
+        localStorage.setItem('et_students', JSON.stringify(S.students));
+        localStorage.setItem('et_grades', JSON.stringify(S.grades));
+        localStorage.setItem('et_attendance', JSON.stringify(S.attendance));
+        localStorage.setItem('et_nSID', nSID);
+        localStorage.setItem('et_nGID', nGID);
+        localStorage.setItem('et_nAID', nAID);
+    } catch (e) { toast('Failed to save: ' + e.message, 'error'); }
+}
+
+function loadAll() {
+    try {
+        var s = localStorage.getItem('et_students');
+        var g = localStorage.getItem('et_grades');
+        var a = localStorage.getItem('et_attendance');
+
+        if (s) S.students = JSON.parse(s).map(function (x) { return Object.assign(new Student(x.id, x.firstName, x.lastName, x.email, x.phone, x.major, x.year), x); });
+        if (g) S.grades = JSON.parse(g).map(function (x) { return Object.assign(new Grade(x.id, x.studentId, x.subject, x.score, x.semester), x); });
+        if (a) S.attendance = JSON.parse(a).map(function (x) { return Object.assign(new AttRecord(x.id, x.studentId, x.date, x.status), x); });
+
+        nSID = parseInt(localStorage.getItem('et_nSID') || '1');
+        nGID = parseInt(localStorage.getItem('et_nGID') || '1');
+        nAID = parseInt(localStorage.getItem('et_nAID') || '1');
+    } catch (e) { console.error('Load error:', e); }
+}
+
+function seed() {
+    if (S.students.length) return;
+    [['Ahmed', 'Hassan', 'ahmed.h@su.edu.eg', '01012345678', 'Computer Science', 3],
+    ['Sara', 'Mohamed', 'sara.m@su.edu.eg', '01098765432', 'Information Technology', 2],
+    ['Omar', 'Ali', 'omar.ali@su.edu.eg', '01156789012', 'Software Engineering', 4],
+    ['Nour', 'Ibrahim', 'nour.i@su.edu.eg', '01234567890', 'Data Science', 1],
+    ['Youssef', 'Khalil', 'youssef.k@su.edu.eg', '01345678901', 'Computer Science', 2],
+    ].forEach(function (d) { S.students.push(new Student(nSID++, d[0], d[1], d[2], d[3], d[4], d[5])); });
+
+    [[1, 'Web Programming', 92], [1, 'Data Structures', 88], [2, 'Web Programming', 75], [2, 'Database Systems', 82],
+    [3, 'Software Design', 95], [3, 'Web Programming', 91], [4, 'Statistics', 70], [5, 'Web Programming', 88],
+    ].forEach(function (d) { S.grades.push(new Grade(nGID++, d[0], d[1], d[2], 'Spring 2026')); });
+
+    ['present', 'present', 'present', 'late', 'absent'].forEach(function (st, i) {
+        S.attendance.push(new AttRecord(nAID++, S.students[i].id, S.attDate, st));
+    });
+    saveAll();
+}
+
+function filteredStudents() {
+    return S.students.filter(function (s) {
+        var q = S.search.toLowerCase();
+        return (!q || s.fullName.toLowerCase().includes(q) || s.email.toLowerCase().includes(q))
+            && (!S.fMajor || s.major === S.fMajor)
+            && (!S.fYear || s.year === +S.fYear);
+    });
+}
+
+function openOverlay(id) { document.getElementById(id).classList.add('open'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+function openStudentModal(student) {
+    var form = document.getElementById('studentForm');
+    form.reset();
+    S.editId = student ? student.id : null;
+    document.getElementById('modalTitle').textContent = student ? 'Edit Student' : 'Add New Student';
+    if (student) {
+        ['firstName', 'lastName', 'email', 'phone', 'year', 'major'].forEach(function (k) {
+            form.elements[k].value = student[k] || '';
+        });
+    }
+    openOverlay('studentOverlay');
+}
+
+document.getElementById('studentForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    try {
+        var form = e.target;
+        if (!form.checkValidity()) { form.reportValidity(); return; }
+
+        var d = Object.fromEntries(new FormData(form));
+
+        if (S.students.find(function (s) { return s.email === d.email && s.id !== S.editId; })) {
+            toast('Email already registered', 'error'); return;
+        }
+
+        if (S.editId) {
+            var idx = S.students.findIndex(function (s) { return s.id === S.editId; });
+            if (idx !== -1) Object.assign(S.students[idx], d, { year: +d.year });
+            toast(d.firstName + ' ' + d.lastName + ' updated ✏️', 'success');
+        } else {
+            S.students.push(new Student(nSID++, d.firstName, d.lastName, d.email, d.phone, d.major, d.year));
+            toast(d.firstName + ' ' + d.lastName + ' added successfully 🎉', 'success');
+        }
+
+        saveAll(); closeOverlay('studentOverlay'); updateBadge(); render();
+    } catch (err) { toast('Error: ' + err.message, 'error'); }
+});
+
+function deleteStudent(id) {
+    var s = S.students.find(function (x) { return x.id === id; });
+    if (!s) return;
+    confirmDel('This will delete <strong>' + s.fullName + '</strong> and all their records.', function () {
+        try {
+            S.students = S.students.filter(function (x) { return x.id !== id; });
+            S.grades = S.grades.filter(function (g) { return g.studentId !== id; });
+            S.attendance = S.attendance.filter(function (a) { return a.studentId !== id; });
+            saveAll(); updateBadge(); render();
+            toast(s.fullName + ' deleted', 'info');
+        } catch (err) { toast('Delete failed: ' + err.message, 'error'); }
+    });
+}
+
+function rStudents() {
+    var list = filteredStudents();
+    var majors = [...new Set(S.students.map(function (s) { return s.major; }))];
+    var majorOpts = majors.map(function (m) { return '<option value="' + m + '"' + (S.fMajor === m ? ' selected' : '') + '>' + m + '</option>'; }).join('');
+    var yearOpts = [1, 2, 3, 4].map(function (y) { return '<option value="' + y + '"' + (S.fYear == y ? ' selected' : '') + '>Year ' + y + '</option>'; }).join('');
+
+    var rows = list.map(function (s) {
+        var g = gpaOf(s.id), a = attRateOf(s.id);
+        var attBadge = a !== null ? '<span class="badge ' + (a >= 75 ? 'b-success' : a >= 50 ? 'b-warning' : 'b-danger') + '">' + a + '%</span>' : '<span style="color:var(--text-muted)">—</span>';
+        return '<tr><td><div class="name-cell"><div class="av">' + s.initials + '</div><div>' +
+            '<div style="font-weight:600">' + s.fullName + '</div>' +
+            '<div style="font-size:.73rem;color:var(--text-muted)">' + (s.phone || '—') + '</div>' +
+            '</div></div></td><td style="color:var(--text-muted)">' + s.email + '</td>' +
+            '<td><span class="badge b-navy">' + s.major + '</span></td>' +
+            '<td><span class="badge b-info">Yr ' + s.year + '</span></td>' +
+            '<td class="' + gpaClass(g) + '">' + (g || '—') + '</td><td>' + attBadge + '</td>' +
+            '<td><div style="display:flex;gap:5px">' +
+            '<button class="btn btn-outline btn-sm editS" data-id="' + s.id + '">✏️</button>' +
+            '<button class="btn btn-danger btn-sm delS" data-id="' + s.id + '">🗑️</button>' +
+            '</div></td></tr>';
+    }).join('');
+
+    var emptyMsg = (S.search || S.fMajor || S.fYear)
+        ? '<div class="empty"><div class="empty-icon">🔍</div><p>No students match your filters</p></div>'
+        : '<div class="empty"><div class="empty-icon">👨‍🎓</div><p>No students yet — add your first one!</p></div>';
+
+    return '<div class="sec-head"><h2>Students</h2><p>Manage all enrolled students</p></div>' +
+        '<div class="card"><div class="card-header">' +
+        '<span class="card-title">All Students <span style="color:var(--text-muted);font-size:.83rem">(' + list.length + ')</span></span>' +
+        '<div class="card-actions">' +
+        '<div class="search-wrap"><input type="text" id="sSearch" placeholder="Search…" value="' + S.search + '"></div>' +
+        '<select class="filter-sel" id="sMajor"><option value="">All Majors</option>' + majorOpts + '</select>' +
+        '<select class="filter-sel" id="sYear"><option value="">All Years</option>' + yearOpts + '</select>' +
+        '<button class="btn btn-gold" id="addStBtn">+ Add Student</button>' +
+        '</div></div>' +
+        (list.length ? '<table><thead><tr><th>Student</th><th>Email</th><th>Major</th><th>Year</th><th>GPA</th><th>Attendance</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>' : emptyMsg) +
+        '</div>';
+}
+
+///////////////////////////////////////////////////////////////////////////////
+class Grade {
+    constructor(id, studentId, subject, score, semester) {
+        this.id = id;
+        this.studentId = studentId;
+        this.subject = subject;
+        this.score = parseFloat(score);
+        this.semester = semester;
+        this.date = new Date().toISOString().split('T')[0];
+    }
+
+    get letter() {
+        if (this.score >= 90) return 'A';
+        if (this.score >= 80) return 'B';
+        if (this.score >= 70) return 'C';
+        if (this.score >= 60) return 'D';
+        return 'F';
+    }
+
+    get pts() {
+        if (this.score >= 90) return 4.0;
+        if (this.score >= 85) return 3.7;
+        if (this.score >= 80) return 3.3;
+        if (this.score >= 75) return 3.0;
+        if (this.score >= 70) return 2.7;
+        if (this.score >= 65) return 2.3;
+        if (this.score >= 60) return 2.0;
+        return 0.0;
+    }
+}
+
+function gradesOf(id) {
+    return S.grades.filter(function (g) {
+        return g.studentId === id;
+    });
+}
+
+function gpaOf(id) {
+    var gs = gradesOf(id);
+    if (!gs.length) return null;
+
+    var sum = gs.reduce(function (a, g) {
+        return a + g.pts;
+    }, 0);
+
+    return (sum / gs.length).toFixed(2);
+}
+
+function gpaClass(gpa) {
+    if (!gpa) return '';
+    var g = +gpa;
+    return g >= 3.5 ? 'gpa-A' : g >= 3.0 ? 'gpa-B' : g >= 2.0 ? 'gpa-C' : 'gpa-F';
+}
+
+function attRateOf(id) {
+    var rs = S.attendance.filter(function (a) {
+        return a.studentId === id;
+    });
+    if (!rs.length) return null;
+
+    var presentCount = rs.filter(function (a) {
+        return a.status === 'present' || a.status === 'late';
+    }).length;
+
+    return Math.round(presentCount / rs.length * 100);
+}
+
+function validateGrade() {
+    var ok = true;
+
+    var sid = document.getElementById('iGStudent').value;
+    var subj = document.getElementById('iSubject').value.trim();
+    var sc = document.getElementById('iScore').value;
+    var sem = document.getElementById('iSemester').value;
+
+    setField('iGStudent', 'eGStudent', 'Student is required', !sid);
+    if (!sid) ok = false;
+
+    setField('iSubject', 'eSubject', 'Subject is required', !subj);
+    if (!subj) ok = false;
+
+    var bad = sc === '' || isNaN(+sc) || +sc < 0 || +sc > 100;
+    setField('iScore', 'eScore', 'Score must be 0–100', bad);
+    if (bad) ok = false;
+
+    setField('iSemester', 'eSemester', 'Semester is required', !sem);
+    if (!sem) ok = false;
+
+    return ok;
+}
+
+function openGradeModal() {
+    var sel = document.getElementById('iGStudent');
+
+    sel.innerHTML = '<option value="">Select Student</option>';
+    S.students.forEach(function (s) {
+        sel.innerHTML += '<option value="' + s.id + '">' + s.fullName + '</option>';
+    });
+
+    document.getElementById('iSubject').value = '';
+    document.getElementById('iScore').value = '';
+    document.getElementById('iSemester').value = '';
+
+    ['iGStudent', 'iSubject', 'iScore', 'iSemester'].forEach(function (id) {
+        document.getElementById(id).classList.remove('err');
+    });
+    ['eGStudent', 'eSubject', 'eScore', 'eSemester'].forEach(function (id) {
+        document.getElementById(id).classList.remove('show');
+    });
+
+    openOverlay('gradeOverlay');
+}
+
+function saveGrade() {
+    try {
+        if (!validateGrade()) {
+            toast('Please fix the form errors', 'error');
+            return;
+        }
+
+        var sid = +document.getElementById('iGStudent').value;
+        var subj = document.getElementById('iSubject').value.trim();
+        var sc = +document.getElementById('iScore').value;
+        var sem = document.getElementById('iSemester').value;
+
+        S.grades.push(new Grade(nGID++, sid, subj, sc, sem));
+
+        saveAll();
+        closeOverlay('gradeOverlay');
+
+        var st = S.students.find(function (s) { return s.id === sid; });
+        toast('Grade added for ' + (st ? st.fullName : '') + ' 📝', 'success');
+
+        render();
+    } catch (e) {
+        console.error(e);
+        toast('Error: ' + e.message, 'error');
+    }
+}
+
+function deleteGrade(id) {
+    try {
+        S.grades = S.grades.filter(function (g) { return g.id !== id; });
+        saveAll();
+        render();
+        toast('Grade removed', 'info');
+    } catch (e) {
+        toast('Error: ' + e.message, 'error');
+    }
+}
+
+function rGrades() {
+
+    var list = S.fGrade
+        ? S.grades.filter(function (g) { return g.studentId === +S.fGrade; })
+        : S.grades;
+
+    var studentOptions = S.students.map(function (s) {
+        return '<option value="' + s.id + '"' + (S.fGrade == s.id ? ' selected' : '') + '>' + s.fullName + '</option>';
+    }).join('');
+
+    var gradeRows = list.map(function (g) {
+        var st = S.students.find(function (s) { return s.id === g.studentId; });
+        return '<tr>' +
+            '<td><div class="name-cell">' +
+            (st ? '<div class="av">' + st.initials + '</div>' : '') +
+            '<span style="font-weight:500">' + (st ? st.fullName : 'Unknown') + '</span>' +
+            '</div></td>' +
+            '<td>' + g.subject + '</td>' +
+            '<td><strong>' + g.score + '</strong>/100</td>' +
+            '<td class="gpa-' + g.letter + '">' + g.letter + '</td>' +
+            '<td>' + g.pts.toFixed(1) + '</td>' +
+            '<td><span class="badge b-info">' + g.semester + '</span></td>' +
+            '<td style="color:var(--text-muted)">' + g.date + '</td>' +
+            '<td><button class="btn btn-danger btn-sm delG" data-id="' + g.id + '">🗑️</button></td>' +
+            '</tr>';
+    }).join('');
+
+    var summaryRows = S.students.map(function (s) {
+        var g = gpaOf(s.id);
+        var gs = gradesOf(s.id);
+        var gn = +g;
+
+        var label, cls;
+        if (!g) { label = 'No Grades'; cls = 'b-navy'; }
+        else if (gn >= 3.5) { label = 'Excellent'; cls = 'b-success'; }
+        else if (gn >= 3.0) { label = 'Good'; cls = 'b-info'; }
+        else if (gn >= 2.0) { label = 'Average'; cls = 'b-warning'; }
+        else { label = 'At Risk'; cls = 'b-danger'; }
+
+        return '<tr>' +
+            '<td><div class="name-cell"><div class="av">' + s.initials + '</div>' +
+            '<span style="font-weight:600">' + s.fullName + '</span></div></td>' +
+            '<td>' + s.major + '</td>' +
+            '<td>' + gs.length + ' subj.</td>' +
+            '<td class="' + gpaClass(g) + '">' + (g || '—') + '</td>' +
+            '<td><span class="badge ' + cls + '">' + label + '</span></td>' +
+            '</tr>';
+    }).join('');
+
+    return '<div class="sec-head"><h2>Grades</h2><p>Track academic performance across all subjects</p></div>' +
+        '<div class="card">' +
+        '<div class="card-header">' +
+        '<span class="card-title">Grade Records <span style="color:var(--text-muted);font-size:.83rem">(' + list.length + ')</span></span>' +
+        '<div class="card-actions">' +
+        '<select class="filter-sel" id="gFilter"><option value="">All Students</option>' + studentOptions + '</select>' +
+        '<button class="btn btn-gold" id="addGBtn">+ Add Grade</button>' +
+        '</div></div>' +
+        (list.length
+            ? '<table><thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Letter</th><th>GPA Pts</th><th>Semester</th><th>Date</th><th></th></tr></thead><tbody>' + gradeRows + '</tbody></table>'
+            : '<div class="empty"><div class="empty-icon">📝</div><p>No grades yet — click + Add Grade</p></div>') +
+        '</div>' +
+
+        (S.students.length
+            ? '<div class="card" style="margin-top:24px">' +
+            '<div class="card-header"><span class="card-title">GPA Summary</span></div>' +
+            '<table><thead><tr><th>Student</th><th>Major</th><th>Subjects</th><th>GPA</th><th>Status</th></tr></thead><tbody>' +
+            summaryRows + '</tbody></table></div>'
+            : '');
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//Sayed
 
 //////////////////////////////////////////////////////////////////////////////////
 //Sayed
