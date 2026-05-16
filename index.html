@@ -1,110 +1,162 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduTrack - Student Management System</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduTrack — Student Management System</title>
     <link rel="icon" href="data:,">
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-    <!-- SideBar -->
+    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
             <h1>EduTrack</h1>
             <p>Student Management System</p>
         </div>
-        <nav class="Sidebar-nav">
+        <nav class="sidebar-nav">
             <div class="nav-label">Main</div>
-            <button class="nav-item active" data-page="dashboard">Dashboard</button>
-            <button class="nav-item" data-page="students">Students</button>
-            <button class="nav-item" data-page="grades">Grades</button>
-            <button class="nav-item" data-page="attendance">Attendance</button>
+            <button class="nav-item active" data-page="dashboard"><span class="icon">📊</span>Dashboard</button>
+            <button class="nav-item" data-page="students"><span class="icon">👨‍🎓</span>Students</button>
+            <button class="nav-item" data-page="grades"><span class="icon">📝</span>Grades</button>
+            <button class="nav-item" data-page="attendance"><span class="icon">📅</span>Attendance</button>
             <div class="nav-label" style="margin-top:8px">Analytics</div>
-            <button class="nav-item" data-page="reports">📈 Reports</button>
+            <button class="nav-item" data-page="reports"><span class="icon">📈</span>Reports</button>
         </nav>
+        <div class="sidebar-footer">
+            <button class="theme-btn" id="themeBtn">
+                <span id="themeIcon">🌙</span><span id="themeText">Dark Mode</span>
+            </button>
+        </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- MAIN -->
     <main class="main">
         <header class="topbar">
-            <div style="display:flex; align-items:center; gap:12px">
+            <div style="display:flex;align-items:center;gap:12px">
                 <button class="hamburger" id="hamburger">☰</button>
                 <span class="topbar-title" id="pageTitle">Dashboard</span>
             </div>
             <div class="topbar-right">
-                <span class="live-badge" id="liveBadge">0 Students</span>
-                <button class="btn btn-gold btn-sm" id="topAddBtn">Add Student +</button>
+                <span class="live-badge" id="liveBadge">👨‍🎓 0 Students</span>
+                <button class="btn btn-gold btn-sm" id="topAddBtn">+ Add Student</button>
             </div>
         </header>
         <div class="content" id="content"></div>
     </main>
 
-    <!-- Toasts -->
-    <div id="toasts"></div>
-
+    <!-- STUDENT MODAL -->
     <div class="overlay" id="studentOverlay">
-        <div class="modal-head">
-            <span class="modal-title" id="modalTitle">Add New Student</span>
-            <button class="modal-close" data-close="studentOverlay">Cancel</button>
-        </div>
-        <div class="modal-body">
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">First Name</label>
-                    <input type="text" class="form-input" id="iFirst" placeholder="Ahmed">
-                    <span class="form-error" id="eFirst">First name is required</span>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Last Name</label>
-                    <input type="text" class="form-input" id="iLast" placeholder="Hassan">
-                    <span class="form-error" id="eLast">Last name is required</span>
-                </div>
+        <div class="modal">
+            <div class="modal-head">
+                <span class="modal-title" id="modalTitle">Add New Student</span>
+                <button class="modal-close" data-close="studentOverlay">✕</button>
             </div>
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="iEmail" placeholder="ahmed@example.com">
-                <span class="form-error" id="eEmail">Valid email is required</span>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Phone</label>
-                <input type="text" class="form-input" id="iPhone" placeholder="01012345678">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Year</label>
-                    <select class="form-input" id="iYear">
-                        <option value="">Select Year</option>
-                        <option value="1">Year 1</option>
-                        <option value="2">Year 2</option>
-                        <option value="3">Year 3</option>
-                        <option value="4">Year 4</option>
-                    </select>
-                    <span class="form-error" id="eYear">Year is required</span>
+            <form id="studentForm" novalidate>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">First Name *</label>
+                            <input type="text" class="form-input" name="firstName" placeholder="Ahmed" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name *</label>
+                            <input type="text" class="form-input" name="lastName" placeholder="Hassan" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-input" name="email" placeholder="ahmed@su.edu.eg" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-input" name="phone" placeholder="01012345678">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Year *</label>
+                            <select class="form-input" name="year" required>
+                                <option value="">Select Year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Major *</label>
+                        <select class="form-input" name="major" required>
+                            <option value="">Select Major</option>
+                            <option>Computer Science</option>
+                            <option>Information Technology</option>
+                            <option>Software Engineering</option>
+                            <option>Data Science</option>
+                            <option>Cybersecurity</option>
+                            <option>Business</option>
+                            <option>Mathematics</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Major</label>
-                    <select class="form-input" id="iMajor">
-                        <option value="">Select Major</option>
-                        <option value="Computer Science">Computer Science</option>
-                        <option value="Information Technology">Information Technology</option>
-                        <option value="Software Engineering">Software Engineering</option>
-                        <option value="Data Science">Data Science</option>
-                        <option value="Cybersecurity">Cybersecurity</option>
-                    </select>
-                    <span class="form-error" id="eMajor">Major is required</span>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-close="studentOverlay">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Student</button>
                 </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" data-close="studentOverlay">Cancel</button>
-            <button class="btn btn-primary" id="saveStudentBtn">Save Student</button>
+            </form>
         </div>
     </div>
+
+    <!-- GRADE MODAL -->
+    <div class="overlay" id="gradeOverlay">
+        <div class="modal">
+            <div class="modal-head">
+                <span class="modal-title">Add Grade</span>
+                <button class="modal-close" data-close="gradeOverlay">✕</button>
+            </div>
+            <form id="gradeForm" novalidate>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Student *</label>
+                        <select class="form-input" name="studentId" required>
+                            <option value="">Select Student</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Subject *</label>
+                        <input type="text" class="form-input" name="subject" placeholder="e.g., Web Programming"
+                            required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Score (0–100) *</label>
+                            <input type="number" class="form-input" name="score" placeholder="85" min="0" max="100"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Semester *</label>
+                            <select class="form-input" name="semester" required>
+                                <option value="">Select</option>
+                                <option>Fall 2025</option>
+                                <option>Spring 2026</option>
+                                <option>Fall 2026</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn btn-outline" data-close="gradeOverlay">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Grade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toasts"></div>
 
     <script src="script.js"></script>
 </body>
